@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { App } from "@slack/bolt";
+import express from "express";
 
 dotenv.config();
 
@@ -75,17 +76,25 @@ app.event("message", async ({ event, client, logger }) => {
   }
 });
 
-(async () => {
+const receiverApp = express();
+
+receiverApp.get("/", (req, res) => {
+  res.send("Slack bot is running");
+});
+
+const PORT = process.env.PORT || 3000;
+
+receiverApp.listen(PORT, async () => {
   await app.start();
 
-  console.log("✅ Slack alert running");
+  console.log(`✅ Slack alert running on port ${PORT}`);
   console.log("✅ Bot connected successfully");
 
   app.client.auth.test({
-    token: process.env.SLACK_BOT_TOKEN
+    token: process.env.SLACK_BOT_TOKEN,
   }).then((res) => {
     console.log("✅ BOT INFO:", res.user, res.team);
   }).catch((err) => {
     console.log("❌ BOT AUTH ERROR:", err);
   });
-})();
+});
